@@ -1,37 +1,230 @@
-## Welcome to GitHub Pages
+<!DOCTYPE html>
+<html>
 
-You can use the [editor on GitHub](https://github.com/SdogLi/sdogli.gitHub.io/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
+<head>
+    <title>索言狗语</title>
+    <!-- <link rel="shortcut icon" href="./favicon.ico" /> -->
+    <link type="text/css" rel="stylesheet" href="https://at.alicdn.com/t/font_1755564_z4mhxbw13mq.css"></link>
+    <link href="https://fonts.loli.net/css?family=Noto+Serif+SC:200,300,900&display=swap&subset=chinese-simplified" rel="stylesheet">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="description" content="">
+    <meta name="keywords" content="" />
+    <meta name="author" content="daibor" />
+    <meta charset="utf-8" />
+    <meta name="robots" content="index,follow" />
+    <meta name="google" content="index,follow" />
+    <meta name="googlebot" content="index,follow" />
+    <meta name="verify" content="index,follow" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+<body>
+    <header id="header">
+        <h1>索言狗语</h1>
+    </header>
+    <main id="app">
+        <aside>
+            <p id="describe">
+                低效率人士，喜欢摸鱼
+            </p>
+        </aside>
+        <p class="tip">现在总共 b 了 {{count}} 条</p>
+        <section class="item" v-for="item in contents" v-cloak>
+            <p v-html='item.attributes.content'></p>
+            <time v-bind:datetime="item.attributes.time">{{item.attributes.time}}</time>
+        </section>
+        <div class="load-ctn">
+            <button class="load-btn" v-on:click="loadMore" v-if="contents" v-cloak>再翻翻</button>
+            <p class="tip" v-else>别急，加载呢</p>
+        </div>
+    </main>
+    <footer>
+        <p class="center-text">Copyright © 2020 sdog,All Rights Reserved</p>
+    </footer>
+</body>
+<script src="https://cdn.bootcss.com/vue/2.6.11/vue.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.5.3/dist/av-min.js"></script>
+<script type="text/javascript">
+    var {
+        Query
+    } = AV;
+    AV.init({
+        appId: "nFx5uTvpxdo9VCFYl63uk111-MdYXbMMI", 
+        appKey: "V51yynw9nbYMpTHQ6MTdKBWG", 
+        
+    });
 
-### Markdown
+    var query = new AV.Query('content');
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+    var app = new Vue({
+        el: '#app',
+        data: {
+            page: 0,
+            count: 0,
+            contents: []
+        },
+        methods: {
+            loadMore: function(event) {
+                getData(++this.page);
+            }
+        }
+    })
 
-```markdown
-Syntax highlighted code block
+    function urlToLink(str) {
+        var re = /(http|ftp|https):\/\/[\w-]+(.[\w-]+)+([\w-.,@?^=%&:/~+#]*[\w-\@?^=%&/~+#])?/g;;
 
-# Header 1
-## Header 2
-### Header 3
+        str = str.replace(re, function(website) {
+            return "<a href='" + website + "' target='_blank'> <i class='iconfont icon-lianjie-copy'></i>链接 </a>";
+        });
+        return str;
+    }
 
-- Bulleted
-- List
+    function getData(page = 0) {
+        query.descending('createdAt').skip(page * 20).limit(20).find().then(function(results) {
+            if (results.length == 0) {
+                alert('之前没 b 过了')
+            } else {
+                let resC = results;
+                reqData = false;
+                resC.forEach((i) => {
+                    let dateTmp = new Date(i.createdAt);
+                    i.attributes.time = `${dateTmp.getFullYear()}-${(dateTmp.getMonth() + 1) < 10 ? ('0' + (dateTmp.getMonth()+1)) : dateTmp.getMonth()+1}-${(dateTmp.getDate() + 1) < 10 ? ('0' + dateTmp.getDate()) : dateTmp.getDate()} ${(dateTmp.getHours() + 1) <= 10 ? ('0' + dateTmp.getHours()) : dateTmp.getHours()}:${(dateTmp.getMinutes() + 1) <= 10 ? ('0' + dateTmp.getMinutes()) : dateTmp.getMinutes()}`;
+                    i.attributes.content = "<span>" + urlToLink(i.attributes.content) + "</span>";
+                    app.contents.push(i);
+                })
+            }
 
-1. Numbered
-2. List
+        }, function(error) {});
+    }
 
-**Bold** and _Italic_ and `Code` text
+    getData(0);
 
-[Link](url) and ![Image](src)
-```
+    query.count().then(function(count) {
+        app.count = count;
+    }, function(error) {});
+</script>
+<style type="text/css">
+    @media (prefers-color-scheme: dark) {
+        /* 夜间模式 */
+        body {
+            background-color: black;
+            color: white;
+        }
+        body .item {
+            border-top: 6px solid #888888;
+            background-color: rgb(21, 32, 43);
+            color: #ccc;
+        }
+        body time {
+            color: #aaa;
+        }
+        h1 {
+            color: #ffffff;
+        }
+        aside {
+            color: #ccc;
+        }
+        body .load-btn {
+            background-color: #000;
+            color: #ddd;
+        }
+        body .load-btn:hover:active {
+            background: #1DA1F2;
+            color: #fff;
+        }
+    }
+    
+    [v-cloak] {
+        display: none;
+    }
+    
+    html {
+        font-size: 20px;
+    }
+    
+    body,
+    button {
+        font-family: 'Noto Serif SC', serif;
+    }
+    
+    aside {
+        font-weight: 300;
+        font-style: normal;
+        line-height: 1.8rem;
+    }
+    
+    #app,
+    header,
+    footer {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    
+    h1 {
+        font-weight: 900;
+    }
+    
+    footer {
+        font-size: 0.8rem;
+        clear: both;
+    }
+    
+    .tip {
+        color: #999;
+    }
+    
+    .item {
+        font-weight: 300;
+        font-style: normal;
+        line-height: 1.8rem;
+        background: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+        margin-top: 20px;
+        border-top: 6px solid;
+        text-align: justify;
+    }
+    
+    .item a {
+        text-decoration: none;
+        color: #5dafd5;
+    }
+    
+    time {
+        font-weight: 200;
+        color: #bbb;
+    }
+    
+    .center-text {
+        text-align: center;
+    }
+    
+    .load-ctn {
+        width: 100%;
+    }
+    
+    .load-btn {
+        border: 2px solid #666;
+        width: 130px;
+        outline: none;
+        font-size: 20px;
+        border-radius: 100px;
+        margin: 30px auto;
+        color: #666;
+        line-height: 30px;
+        float: right;
+        background: #fff;
+    }
+    
+    .load-btn:hover:active {
+        background: #666;
+        color: #fff;
+    }
+</style>
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/SdogLi/sdogli.gitHub.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+</html>
